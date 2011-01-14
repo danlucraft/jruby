@@ -8,14 +8,6 @@ module JRuby
     import org.jruby.runtime.profile.FlatProfilePrinter
     import org.jruby.Ruby
     
-    def self.start
-      current_thread_context.start_profiling
-    end
-    
-    def self.stop
-      current_thread_context.stop_profiling
-    end
-    
     def self.results
       current_thread_context.profile_data
     end
@@ -31,6 +23,14 @@ module JRuby
     end
     
     private
+    
+    def self.start
+      current_thread_context.start_profiling
+    end
+    
+    def self.stop
+      current_thread_context.stop_profiling
+    end
     
     def self.runtime
       JRuby::Profiler::Ruby.getGlobalRuntime

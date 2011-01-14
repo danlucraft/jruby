@@ -42,7 +42,7 @@ public class ProfileData implements IProfileData {
     private Invocation topInvocation = currentInvocation;
     private int[] methodRecursion = new int[1000];
     private ThreadContext threadContext;
-
+    
     public ProfileData(ThreadContext tc) {
         threadContext = tc;
     }
@@ -72,23 +72,28 @@ public class ProfileData implements IProfileData {
      * @return the serial number of the previous method being profiled
      */
     public int profileExit(int callingMethod, long startTime) {
-        if (currentInvocation.getMethodSerialNumber() != 0) {
-            long now = System.nanoTime();
-            long duration = now - startTime;
-            Invocation current = currentInvocation;
+        long now = System.nanoTime();
+        long duration = now - startTime;
+        int oldSerial = currentInvocation.getMethodSerialNumber();
+        currentInvocation.addDuration(duration);
+        decRecursionFor(oldSerial);
+        
+        if (currentInvocation != topInvocation) {
+            currentInvocation = currentInvocation.getParent();
             
-            current.addDuration(duration);
-            
-            int previousMethod = current.getMethodSerialNumber();
-            
-            decRecursionFor(previousMethod);
-            
-            currentInvocation = current.getParent();
-            
-            return previousMethod;
+            return oldSerial;
         }
         else {
-            return 0;
+            Invocation newTopInvocation = new Invocation(0);
+            Invocation newCurrentInvocation = 
+                currentInvocation.copyWithNewSerialAndParent(callingMethod, newTopInvocation);
+            
+            newTopInvocation.addChild(newCurrentInvocation);
+            
+            topInvocation     = newTopInvocation;
+            currentInvocation = newTopInvocation;
+            
+            return oldSerial;
         }
     }
 

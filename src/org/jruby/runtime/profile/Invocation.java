@@ -1,4 +1,3 @@
-
 /***** BEGIN LICENSE BLOCK *****
  * Version: CPL 1.0/GPL 2.0/LGPL 2.1
  *
@@ -32,7 +31,7 @@ public class Invocation {
     private final int methodSerialNumber;
     private final int recursiveDepth;
     private final Invocation parent;
-    private final IntHashMap<Invocation> children = new IntHashMap<Invocation>();
+    private final IntHashMap<Invocation> children;
     
     private long duration     = 0;
     private int count         = 0;
@@ -45,6 +44,14 @@ public class Invocation {
         this.parent             = parent;
         this.methodSerialNumber = serial;
         this.recursiveDepth     = recursiveDepth;
+        this.children           = new IntHashMap<Invocation>();
+    }
+
+    public Invocation(Invocation parent, int serial, int recursiveDepth, IntHashMap<Invocation> children) {
+        this.parent             = parent;
+        this.methodSerialNumber = serial;
+        this.recursiveDepth     = recursiveDepth;
+        this.children           = children;
     }
 
     public int getMethodSerialNumber() {
@@ -71,18 +78,22 @@ public class Invocation {
         duration = d;
     }
 
+    public void addDuration(long d) {
+        duration += d;
+    }
+    
     public int getCount() {
         return count;
+    }
+
+    public void setCount(int c) {
+        count = c;
     }
 
     public void incrementCount() {
         count++;
     }
 
-    public void addDuration(long d) {
-        duration += d;
-    }
-    
     public Invocation childInvocationFor(int serial, int recursiveDepth) {
         Invocation child;
         if ((child = children.get(serial)) == null) {
@@ -90,6 +101,17 @@ public class Invocation {
             children.put(serial, child);
         }
         return child;
+    }
+    
+    public Invocation copyWithNewSerialAndParent(int serial, Invocation newParent) {
+        Invocation newInv = new Invocation(newParent, serial, recursiveDepth, children);
+        newInv.setDuration(duration);
+        newInv.setCount(count);
+        return newInv;
+    }
+
+    public void addChild(Invocation child) {
+        children.put(child.getMethodSerialNumber(), child);
     }
     
     public long childTime() {

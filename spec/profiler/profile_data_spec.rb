@@ -64,6 +64,8 @@ describe JRuby::Profiler, "::ProfileData" do
     end
     
     it "should have invocations for each method called plus stop" do
+      puts graph_output
+      p top.children.values.to_a.map {|i| method_name(i)}
       top.children.size.should == 4
     end
     
@@ -141,7 +143,6 @@ describe JRuby::Profiler, "::ProfileData" do
   end
   
   context "after profiling that starts and stops in different methods" do
-    
     before do
       clear
       obj = ProfilerTest.new
