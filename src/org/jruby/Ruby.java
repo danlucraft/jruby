@@ -39,6 +39,8 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby;
 
+import org.jruby.runtime.profile.Invocation;
+import org.jruby.runtime.profile.MethodDataMap;
 import org.jruby.util.func.Function1;
 import java.io.ByteArrayInputStream;
 import java.io.FileDescriptor;
@@ -46,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -2806,9 +2809,15 @@ public final class Ruby {
         }
 
         if (config.isProfilingEntireRun()) {
-            System.err.println("\nmain thread profile results:");
-            IProfileData profileData = (IProfileData) threadService.getMainThread().getContext().getProfileData();
-            config.makeDefaultProfilePrinter(profileData).printProfile(System.err);
+            System.err.println("\nprofile results(across threads):");
+            Collection<RubyThread> values = threadService.getRubyThreadMap().values();
+            List<Invocation> invocations = new ArrayList();
+            for (RubyThread value : values) {
+                if (value != null) {
+                    invocations.add(value.getContext().getProfileData().getResults());
+                }
+            }
+            config.makeDefaultProfilePrinter(new MethodDataMap(invocations.toArray(new Invocation[0]))).printProfile(System.err);
         }
 
         if (systemExit && status != 0) {

@@ -32,18 +32,18 @@ import java.util.Map;
 
 public class GraphProfilePrinter extends AbstractProfilePrinter {
     public static MethodData currentData;
-    private Invocation topInvocation;
+    private MethodDataMap methodData;
 
-    public GraphProfilePrinter(Invocation top) {
-        topInvocation = top;
+    public GraphProfilePrinter(MethodDataMap top) {
+        methodData = top;
     }
 
     public void printProfile(PrintStream out) {
-        out.printf("\nTotal time: %s\n\n", nanoString(topInvocation.getDuration()));
+        out.printf("\nTotal time: %s\n\n", nanoString(methodData.totalDuration()));
 
         out.println(" %total   %self       total        self    children                 calls  name");
 
-        Map<Integer, MethodData> methods = methodData(topInvocation);
+        Map<Integer, MethodData> methods = methodData.methodData();
         MethodData[] sortedMethods = methods.values().toArray(new MethodData[0]);
         
         Arrays.sort(sortedMethods, new Comparator<MethodData>() {
@@ -96,13 +96,13 @@ public class GraphProfilePrinter extends AbstractProfilePrinter {
                 }
                 
                 String displayName = methodName(serial);
-                if (topInvocation.getDuration() == 0) {
+                if (methodData.totalDuration() == 0) {
                     out.print("   100%    100%  ");
                 } else {
                     out.print("  ");
-                    pad(out, 4, Long.toString(data.totalTime() * 100 / topInvocation.getDuration()));
+                    pad(out, 4, Long.toString(data.totalTime() * 100 / methodData.totalDuration()));
                     out.print("%   ");
-                    pad(out, 4, Long.toString(data.selfTime() * 100 / topInvocation.getDuration()));
+                    pad(out, 4, Long.toString(data.selfTime() * 100 / methodData.totalDuration()));
                     out.print("%  ");
                 }
                 pad(out, 10, nanoString(data.totalTime()));

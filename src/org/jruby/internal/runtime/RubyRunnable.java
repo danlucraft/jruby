@@ -40,6 +40,8 @@ import org.jruby.runtime.Frame;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.profile.IProfileData;
+import org.jruby.runtime.profile.Invocation;
+import org.jruby.runtime.profile.MethodDataMap;
 
 public class RubyRunnable implements Runnable {
     private Ruby runtime;
@@ -126,8 +128,8 @@ public class RubyRunnable implements Runnable {
 
                 // dump profile, if any
                 if (runtime.getInstanceConfig().isProfilingEntireRun()) {
-                    IProfileData profileData = (IProfileData) context.getProfileData();
-                    runtime.getInstanceConfig().makeDefaultProfilePrinter(profileData).printProfile(System.err);
+                    Invocation profileData = context.getProfileData().getResults();
+                    runtime.getInstanceConfig().makeDefaultProfilePrinter(new MethodDataMap(profileData)).printProfile(System.err);
                 }
             }
         } catch (ThreadKill tk) {

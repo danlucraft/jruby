@@ -122,28 +122,4 @@ public class AbstractProfilePrinter {
             return module.getName() + "#" + name;
         }
     }
-    
-    protected Map<Integer, MethodData> methodData(Invocation top) {
-        Map<Integer, MethodData> methods = new HashMap();
-        MethodData data = new MethodData(0);
-        methods.put(0, data);
-        data.invocations.add(top);
-        methodData1(methods, top);
-        return methods;
-    }
-
-    protected void methodData1(Map<Integer, MethodData> methods, Invocation inv) {
-        for (Entry<Invocation> entry : inv.getChildren().entrySet()) {
-            Invocation child = entry.getValue();
-            int serial = child.getMethodSerialNumber();
-            MethodData data = methods.get(serial);
-            if (data == null) {
-                data = new MethodData(serial);
-                methods.put(serial, data);
-            }
-            data.invocations.add(child);
-            methodData1(methods, child);
-        }
-    }
-
 }
