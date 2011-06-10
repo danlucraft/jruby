@@ -160,6 +160,7 @@ public final class ThreadContext {
     @Override
     protected void finalize() throws Throwable {
         thread.dispose();
+        thread.captureProfileData(profileData);
     }
     
     public final Ruby getRuntime() {

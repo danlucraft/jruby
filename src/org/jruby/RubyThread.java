@@ -66,6 +66,8 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.runtime.ClassIndex;
 import org.jruby.runtime.ObjectMarshal;
 import static org.jruby.runtime.Visibility.*;
+
+import org.jruby.runtime.profile.IProfileData;
 import org.jruby.util.io.BlockingIO;
 import org.jruby.util.io.SelectorFactory;
 import static org.jruby.CompatVersion.*;
@@ -1197,5 +1199,9 @@ public class RubyThread extends RubyObject implements ExecutionContext {
 
     private String identityString() {
         return "0x" + Integer.toHexString(System.identityHashCode(this));
+    }
+
+    public void captureProfileData(IProfileData profileData) {
+        threadService.captureProfileData(profileData);
     }
 }

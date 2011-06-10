@@ -2810,11 +2810,17 @@ public final class Ruby {
 
         if (config.isProfilingEntireRun()) {
             System.err.println("\nprofile results(across threads):");
-            Collection<RubyThread> values = threadService.getRubyThreadMap().values();
-            List<Invocation> invocations = new ArrayList();
-            for (RubyThread value : values) {
-                if (value != null) {
-                    invocations.add(value.getContext().getProfileData().getResults());
+            List<Invocation> invocations = new ArrayList<Invocation>();
+            List<Invocation> reapedThreadsProfileData = threadService.getReapedThreadsProfileData();
+            synchronized (reapedThreadsProfileData) {
+                for (RubyThread value : threadService.getRubyThreadMap().values()) {
+                    if (value != null) {
+                        invocations.add(value.getContext().getProfileData().getResults());
+                    }
+                }
+
+                for (Invocation invocation : reapedThreadsProfileData) {
+                    invocation.addChild(invocation);
                 }
             }
             config.makeDefaultProfilePrinter(new MethodDataMap(invocations.toArray(new Invocation[0]))).printProfile(System.err);

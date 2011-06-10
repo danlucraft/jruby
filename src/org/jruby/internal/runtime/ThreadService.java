@@ -41,9 +41,12 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Future;
 import org.jruby.Ruby;
+import org.jruby.RubyInstanceConfig;
 import org.jruby.RubyThread;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.ThreadContext;
+import org.jruby.runtime.profile.IProfileData;
+import org.jruby.runtime.profile.Invocation;
 
 /**
  * ThreadService maintains lists ofall the JRuby-specific thread data structures
@@ -137,6 +140,8 @@ public class ThreadService {
     
     private final ReentrantLock criticalLock = new ReentrantLock();
 
+    private final List<Invocation> reapedThreadsProfileResults;
+
     public ThreadService(Ruby runtime) {
         this.runtime = runtime;
         this.localContext = new ThreadLocal<SoftReference<ThreadContext>>();
@@ -148,6 +153,7 @@ public class ThreadService {
         }
 
         this.rubyThreadMap = Collections.synchronizedMap(new WeakHashMap<Object, RubyThread>());
+        this.reapedThreadsProfileResults = new ArrayList<Invocation>();
     }
 
     public void disposeCurrentThread() {
@@ -304,7 +310,19 @@ public class ThreadService {
     public boolean getCritical() {
         return criticalLock.isHeldByCurrentThread();
     }
-    
+
+    public void captureProfileData(IProfileData profileData) {
+        if (RubyInstanceConfig.PROTECT_PROFILING_DATA) {
+            synchronized (reapedThreadsProfileResults) {
+                reapedThreadsProfileResults.add(profileData.getResults());
+            }
+        }
+    }
+
+    public List<Invocation> getReapedThreadsProfileData() {
+        return reapedThreadsProfileResults;
+    }
+
     public static class Event {
         public enum Type { KILL, RAISE, WAKEUP }
         public final RubyThread sender;
