@@ -1,5 +1,6 @@
 package org.jruby.runtime.profile;
 
+import org.jruby.Ruby;
 import org.jruby.util.collections.IntHashMap;
 
 import java.util.HashMap;
@@ -7,9 +8,11 @@ import java.util.Map;
 
 public class MethodDataMap {
 
+    private final Ruby runtime;
     private final Invocation[] invocations;
 
-    public MethodDataMap(Invocation... invocations) {
+    public MethodDataMap(Ruby runtime, Invocation... invocations) {
+        this.runtime = runtime;
         this.invocations = invocations;
     }
 
@@ -53,4 +56,7 @@ public class MethodDataMap {
         }
     }
 
+    public Ruby getRuntime() {
+        return runtime;
+    }
 }

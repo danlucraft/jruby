@@ -25,10 +25,8 @@
  ***** END LICENSE BLOCK *****/
 package org.jruby.runtime.profile;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.jruby.Ruby;
 import org.jruby.runtime.ThreadContext;
-import org.jruby.util.collections.IntHashMap.Entry;
 
 /**
  * Encapsulates the logic of recording and reporting profiled timings of
@@ -181,11 +179,11 @@ public class ProfileData implements IProfileData {
             for (Invocation inv : topInvocation.getChildren().values() ) {
                 singleTopChild = inv;
             }
-            String singleTopChildName = AbstractProfilePrinter.getMethodName(singleTopChild.getMethodSerialNumber());
+            Ruby runtime = threadContext.runtime;
+            String singleTopChildName = runtime.getMethodName(singleTopChild.getMethodSerialNumber());
             if (singleTopChildName.equals("JRuby::Profiler.profile")) {
-                Invocation profiledCodeInvocation = null;
                 for (Invocation inv : singleTopChild.getChildren().values() ) {
-                    if (AbstractProfilePrinter.getMethodName(inv.getMethodSerialNumber()).equals("JRuby::Profiler.profiled_code")) {
+                    if (runtime.getMethodName(inv.getMethodSerialNumber()).equals("JRuby::Profiler.profiled_code")) {
                         return addDuration(inv.copyWithNewSerialAndParent(0, null));
                     }
                 }

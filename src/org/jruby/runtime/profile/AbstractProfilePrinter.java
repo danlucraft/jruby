@@ -27,20 +27,17 @@ package org.jruby.runtime.profile;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.jruby.Ruby;
 import org.jruby.RubyIO;
-import org.jruby.RubyClass;
-import org.jruby.MetaClass;
-import org.jruby.RubyModule;
-import org.jruby.runtime.builtin.IRubyObject;
-import org.jruby.RubyObject;
-import org.jruby.internal.runtime.methods.DynamicMethod;
-import org.jruby.util.collections.IntHashMap.Entry;
 
 public class AbstractProfilePrinter {
+    private final Ruby runtime;
+
+    public AbstractProfilePrinter(Ruby runtime) {
+        this.runtime = runtime;
+    }
+
     public void printProfile(PrintStream out) {
     }
 
@@ -83,43 +80,6 @@ public class AbstractProfilePrinter {
     }
     
     public String methodName(int serial) {
-        return AbstractProfilePrinter.getMethodName(serial);
-    }
-    
-    public static String getMethodName(int serial) {
-        if (serial == 0) {
-            return "(top)";
-        }
-        Ruby runtime = Ruby.getGlobalRuntime();
-        String[] profiledNames = runtime.profiledNames;
-        DynamicMethod[] profiledMethods = runtime.profiledMethods;
-        String displayName;
-        if (serial < profiledNames.length) {
-            String name = profiledNames[serial];
-            DynamicMethod method = profiledMethods[serial];
-            displayName = moduleHashMethod(method.getImplementationClass(), name);
-        } else {
-            displayName = "<unknown>";
-        }
-        // System.out.printf("%d - %s\n", serial, displayName);
-        return displayName;
-    }
-    
-    protected static String moduleHashMethod(RubyModule module, String name) {
-        if (module instanceof MetaClass) {
-            IRubyObject obj = ((MetaClass) module).getAttached();
-            if (obj instanceof RubyModule) {
-                module = (RubyModule) obj;
-                return module.getName() + "." + name;
-            } else if (obj instanceof RubyObject) {
-                return ((RubyObject) obj).getType().getName() + "(singleton)#" + name;
-            } else {
-                return "unknown#" + name;
-            }
-        } else if (module.isSingleton()) {
-            return ((RubyClass) module).getRealClass().getName() + "(singleton)#" + name;
-        } else {
-            return module.getName() + "#" + name;
-        }
+        return runtime.getMethodName(serial);
     }
 }

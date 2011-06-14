@@ -178,6 +178,11 @@ namespace :spec do
     t.pattern = 'spec/compiler/**/*_spec.rb'
   end
 
+  desc "Runs Profiler Specs"
+  RSpec::Core::RakeTask.new("profiler") do |t|
+    t.pattern = 'spec/profiler/**/*_spec.rb'
+  end
+
   desc "Runs FFI specs"
   RSpec::Core::RakeTask.new("ffi" => "test:compile") do |t|
     t.pattern = 'spec/ffi/**/*_spec.rb'

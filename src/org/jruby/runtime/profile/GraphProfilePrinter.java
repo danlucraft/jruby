@@ -35,6 +35,7 @@ public class GraphProfilePrinter extends AbstractProfilePrinter {
     private MethodDataMap methodData;
 
     public GraphProfilePrinter(MethodDataMap top) {
+        super(top.getRuntime());
         methodData = top;
     }
 

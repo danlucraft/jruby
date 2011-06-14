@@ -31,14 +31,9 @@
 package org.jruby.internal.runtime;
 
 import java.lang.ref.SoftReference;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import java.util.WeakHashMap;
 import java.util.concurrent.Future;
 import org.jruby.Ruby;
 import org.jruby.RubyInstanceConfig;
@@ -47,6 +42,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.profile.IProfileData;
 import org.jruby.runtime.profile.Invocation;
+import org.omg.PortableServer.THREAD_POLICY_ID;
 
 /**
  * ThreadService maintains lists ofall the JRuby-specific thread data structures
@@ -140,7 +136,7 @@ public class ThreadService {
     
     private final ReentrantLock criticalLock = new ReentrantLock();
 
-    private final List<Invocation> reapedThreadsProfileResults;
+    private final Set<Invocation> reapedThreadsProfileResults;
 
     public ThreadService(Ruby runtime) {
         this.runtime = runtime;
@@ -153,12 +149,12 @@ public class ThreadService {
         }
 
         this.rubyThreadMap = Collections.synchronizedMap(new WeakHashMap<Object, RubyThread>());
-        this.reapedThreadsProfileResults = new ArrayList<Invocation>();
+        this.reapedThreadsProfileResults = new HashSet<Invocation>();
     }
 
     public void disposeCurrentThread() {
         localContext.set(null);
-        rubyThreadMap.remove(Thread.currentThread());
+        dissociateThread(Thread.currentThread());
     }
 
     public void initMainThread() {
@@ -274,6 +270,7 @@ public class ThreadService {
         ThreadContext context = ThreadContext.newContext(runtime);
         localContext.set(new SoftReference(context));
         context.setThread(thread);
+        associateThread(Thread.currentThread(), thread);
         return context;
     }
 
@@ -282,11 +279,14 @@ public class ThreadService {
     }
 
     public synchronized void dissociateThread(Object threadOrFuture) {
-        rubyThreadMap.remove(threadOrFuture);
+        RubyThread rubyThread = rubyThreadMap.remove(threadOrFuture);
+        if (rubyThread != null) {
+            captureProfileData(rubyThread.getContext().getProfileData());
+        }
     }
     
     public synchronized void unregisterThread(RubyThread thread) {
-        rubyThreadMap.remove(Thread.currentThread());
+        dissociateThread(Thread.currentThread());
         getCurrentContext().setThread(null);
         localContext.set(null);
     }
@@ -319,7 +319,7 @@ public class ThreadService {
         }
     }
 
-    public List<Invocation> getReapedThreadsProfileData() {
+    public Set<Invocation> getReapedThreadsProfileData() {
         return reapedThreadsProfileResults;
     }
 

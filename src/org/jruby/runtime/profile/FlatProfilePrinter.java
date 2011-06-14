@@ -39,6 +39,7 @@ public class FlatProfilePrinter extends AbstractProfilePrinter {
     private final MethodDataMap methodData;
 
     public FlatProfilePrinter(MethodDataMap top) {
+        super(top.getRuntime());
         methodData = top;
     }
 

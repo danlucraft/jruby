@@ -391,7 +391,7 @@ public class RubyInstanceConfig {
     public static final boolean IR_LIVE_VARIABLE = SafePropertyAccessor.getBoolean("jruby.ir.pass.live_variable");
     public static final boolean IR_DEAD_CODE = SafePropertyAccessor.getBoolean("jruby.ir.pass.dead_code");
 
-    public static final boolean PROTECT_PROFILING_DATA = SafePropertyAccessor.getBoolean("jruby.protect.profiling.data", false);
+    public static boolean PROTECT_PROFILING_DATA = SafePropertyAccessor.getBoolean("jruby.protect.profiling.data", false);
 
     public static interface LoadServiceCreator {
         LoadService create(Ruby runtime);

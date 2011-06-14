@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -109,7 +108,6 @@ import org.jruby.runtime.encoding.EncodingService;
 import org.jruby.runtime.load.CompiledScriptLoader;
 import org.jruby.runtime.load.Library;
 import org.jruby.runtime.load.LoadService;
-import org.jruby.runtime.profile.IProfileData;
 import org.jruby.runtime.scope.ManyVarsDynamicScope;
 import org.jruby.util.BuiltinScript;
 import org.jruby.util.ByteList;
@@ -133,7 +131,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.jruby.RubyInstanceConfig.CompileMode;
 import org.jruby.ast.RootNode;
 import org.jruby.ast.executable.RuntimeCache;
-import org.jruby.runtime.opto.ObjectIdentityInvalidator;
 import org.jruby.runtime.opto.Invalidator;
 import org.jruby.evaluator.ASTInterpreter;
 import org.jruby.exceptions.Unrescuable;
@@ -149,7 +146,6 @@ import org.jruby.runtime.load.BasicLibraryService;
 import org.jruby.runtime.opto.OptoFactory;
 import org.jruby.threading.DaemonThreadFactory;
 import org.jruby.util.io.SelectorPool;
-import org.objectweb.asm.Opcodes;
 
 /**
  * The Ruby object represents the top-level of a JRuby "instance" in a given VM.
@@ -238,7 +234,41 @@ public final class Ruby {
         }
         return globalRuntime;
     }
-    
+
+    public String getMethodName(int serial) {
+        if (serial == 0) {
+            return "(top)";
+        }
+        String displayName;
+        if (serial < profiledNames.length) {
+            String name = profiledNames[serial];
+            DynamicMethod method = profiledMethods[serial];
+            displayName = moduleHashMethod(method.getImplementationClass(), name);
+        } else {
+            displayName = "<unknown>";
+        }
+        // System.out.printf("%d - %s\n", serial, displayName);
+        return displayName;
+    }
+
+    public static String moduleHashMethod(RubyModule module, String name) {
+        if (module instanceof MetaClass) {
+            IRubyObject obj = ((MetaClass) module).getAttached();
+            if (obj instanceof RubyModule) {
+                module = (RubyModule) obj;
+                return module.getName() + "." + name;
+            } else if (obj instanceof RubyObject) {
+                return obj.getType().getName() + "(singleton)#" + name;
+            } else {
+                return "unknown#" + name;
+            }
+        } else if (module.isSingleton()) {
+            return ((RubyClass) module).getRealClass().getName() + "(singleton)#" + name;
+        } else {
+            return module.getName() + "#" + name;
+        }
+    }
+
     /**
      * Convenience method for java integrators who may need to switch the notion 
      * of "global" runtime. Use <tt>JRuby.runtime.use_as_global_runtime</tt>
@@ -2809,26 +2839,30 @@ public final class Ruby {
         }
 
         if (config.isProfilingEntireRun()) {
-            System.err.println("\nprofile results(across threads):");
-            List<Invocation> invocations = new ArrayList<Invocation>();
-            List<Invocation> reapedThreadsProfileData = threadService.getReapedThreadsProfileData();
-            synchronized (reapedThreadsProfileData) {
-                for (RubyThread value : threadService.getRubyThreadMap().values()) {
-                    if (value != null) {
-                        invocations.add(value.getContext().getProfileData().getResults());
-                    }
-                }
-
-                for (Invocation invocation : reapedThreadsProfileData) {
-                    invocation.addChild(invocation);
-                }
-            }
-            config.makeDefaultProfilePrinter(new MethodDataMap(invocations.toArray(new Invocation[0]))).printProfile(System.err);
+            printProfilerOutput(System.err);
         }
 
         if (systemExit && status != 0) {
             throw newSystemExit(status);
         }
+    }
+
+    public void printProfilerOutput(final PrintStream outStream) {
+        outStream.println("\nprofile results(across threads):");
+        List<Invocation> invocations = new ArrayList<Invocation>();
+        Set<Invocation> reapedThreadsProfileData = threadService.getReapedThreadsProfileData();
+        synchronized (reapedThreadsProfileData) {
+            for (RubyThread value : threadService.getRubyThreadMap().values()) {
+                if (value != null) {
+                    invocations.add(value.getContext().getProfileData().getResults());
+                }
+            }
+
+            for (Invocation invocation : reapedThreadsProfileData) {
+                invocations.add(invocation);
+            }
+        }
+        config.makeDefaultProfilePrinter(new MethodDataMap(this, invocations.toArray(new Invocation[0]))).printProfile(outStream);
     }
 
     // new factory methods ------------------------------------------------------------------------

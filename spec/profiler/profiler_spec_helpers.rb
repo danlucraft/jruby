@@ -24,11 +24,11 @@ module JRuby::Profiler::SpecHelpers
   def graph_output
     my_output_stream = java.io.ByteArrayOutputStream.new
     print_stream = java.io.PrintStream.new(my_output_stream)
-
-    JRuby::Profiler::GraphProfilePrinter.new(top).printProfile(print_stream)
+    method_data = org.jruby.runtime.profile.MethodDataMap.new(org.jruby.Ruby.getGlobalRuntime(), [top].to_java(org.jruby.runtime.profile.Invocation))
+    JRuby::Profiler::GraphProfilePrinter.new(method_data).printProfile(print_stream)
     my_output_stream.toString
   end
-  
+
   def line_for(text, method)
     lines = lines_for(text, method)
     if lines.length == 0
