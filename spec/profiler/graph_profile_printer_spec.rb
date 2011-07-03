@@ -58,7 +58,7 @@ describe JRuby::Profiler, "::GraphProfilePrinter" do
       main_names = decode_graph(graph_output).map {|r| r[:name]}
       main_names.should include("ProfilerTest#wait")
       main_names.should include("ProfilerTest#test_instance_method")
-      main_names.should include("Kernel.sleep")
+      main_names.should include("Kernel#sleep")
     end
     
     it "each method should have the correct children" do
@@ -66,11 +66,11 @@ describe JRuby::Profiler, "::GraphProfilePrinter" do
       
       wait_children = find_row(graph, "ProfilerTest#wait")[:children]
       wait_children.length.should == 1
-      wait_children.first[:name].should == "Kernel.sleep"
+      wait_children.first[:name].should == "Kernel#sleep"
       wait_children.first[:calls].should == [1, 1]
       
       find_row(graph, "ProfilerTest#test_instance_method")[:children].length.should == 0
-      find_row(graph, "Kernel.sleep")[:children].length.should == 0
+      find_row(graph, "Kernel#sleep")[:children].length.should == 0
     end
     
     it "each method should have the correct parents" do
@@ -84,7 +84,7 @@ describe JRuby::Profiler, "::GraphProfilePrinter" do
       parents.length.should == 1
       parents.first[:name].should == "(top)"
 
-      sleep_parents = find_row(graph, "Kernel.sleep")[:parents]
+      sleep_parents = find_row(graph, "Kernel#sleep")[:parents]
       sleep_parents.length.should == 1
       sleep_parents.first[:name].should == "ProfilerTest#wait"
       sleep_parents.first[:calls].should == [1, 1]
