@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.util.collections.IntHashMap.Entry;
+import org.jruby.internal.runtime.methods.ProfilingDynamicMethod;
 
 /**
  * Encapsulates the logic of recording and reporting profiled timings of
@@ -71,7 +72,7 @@ public class ProfileData implements IProfileData {
      * @return the serial number of the previous method being profiled
      */
     public int profileExit(int callingMethod, long startTime) {
-        long now = System.nanoTime();
+        long now = ProfilingDynamicMethod.threadMXBean.getCurrentThreadCpuTime();
         long duration = now - startTime;
         int oldSerial = currentInvocation.getMethodSerialNumber();
         currentInvocation.addDuration(duration);

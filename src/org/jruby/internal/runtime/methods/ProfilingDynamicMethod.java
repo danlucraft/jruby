@@ -32,12 +32,15 @@ import org.jruby.RubyModule;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 
 /**
  * A DynamicMethod wrapper that performs timed profiling for each call.
  */
 public class ProfilingDynamicMethod extends DelegatingDynamicMethod {
     final int serialNumber;
+    public final static ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
 
     public ProfilingDynamicMethod(DynamicMethod delegate) {
         super(delegate);
@@ -46,7 +49,7 @@ public class ProfilingDynamicMethod extends DelegatingDynamicMethod {
 
     @Override
     public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name) {
-        long start = System.nanoTime();
+        long start = threadMXBean.getCurrentThreadCpuTime();
         int previousSerial = context.profileEnter(serialNumber);
         try {
             return delegate.call(context, self, clazz, name);
@@ -57,7 +60,7 @@ public class ProfilingDynamicMethod extends DelegatingDynamicMethod {
 
     @Override
     public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0) {
-        long start = System.nanoTime();
+        long start = threadMXBean.getCurrentThreadCpuTime();
         int previousSerial = context.profileEnter(serialNumber);
         try {
             return delegate.call(context, self, clazz, name, arg0);
@@ -68,7 +71,7 @@ public class ProfilingDynamicMethod extends DelegatingDynamicMethod {
 
     @Override
     public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, IRubyObject arg1) {
-        long start = System.nanoTime();
+        long start = threadMXBean.getCurrentThreadCpuTime();
         int previousSerial = context.profileEnter(serialNumber);
         try {
             return delegate.call(context, self, clazz, name, arg0, arg1);
@@ -79,7 +82,7 @@ public class ProfilingDynamicMethod extends DelegatingDynamicMethod {
 
     @Override
     public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2) {
-        long start = System.nanoTime();
+        long start = threadMXBean.getCurrentThreadCpuTime();
         int previousSerial = context.profileEnter(serialNumber);
         try {
             return delegate.call(context, self, clazz, name, arg0, arg1, arg2);
@@ -90,7 +93,7 @@ public class ProfilingDynamicMethod extends DelegatingDynamicMethod {
 
     @Override
     public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject[] args) {
-        long start = System.nanoTime();
+        long start = threadMXBean.getCurrentThreadCpuTime();
         int previousSerial = context.profileEnter(serialNumber);
         try {
             return delegate.call(context, self, clazz, name, args);
@@ -101,7 +104,7 @@ public class ProfilingDynamicMethod extends DelegatingDynamicMethod {
 
     @Override
     public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, Block block) {
-        long start = System.nanoTime();
+        long start = threadMXBean.getCurrentThreadCpuTime();
         int previousSerial = context.profileEnter(serialNumber);
         try {
             return delegate.call(context, self, clazz, name, block);
@@ -112,7 +115,7 @@ public class ProfilingDynamicMethod extends DelegatingDynamicMethod {
 
     @Override
     public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, Block block) {
-        long start = System.nanoTime();
+        long start = threadMXBean.getCurrentThreadCpuTime();
         int previousSerial = context.profileEnter(serialNumber);
         try {
             return delegate.call(context, self, clazz, name, arg0, block);
@@ -123,7 +126,7 @@ public class ProfilingDynamicMethod extends DelegatingDynamicMethod {
 
     @Override
     public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, IRubyObject arg1, Block block) {
-        long start = System.nanoTime();
+        long start = threadMXBean.getCurrentThreadCpuTime();
         int previousSerial = context.profileEnter(serialNumber);
         try {
             return delegate.call(context, self, clazz, name, arg0, arg1, block);
@@ -134,7 +137,7 @@ public class ProfilingDynamicMethod extends DelegatingDynamicMethod {
 
     @Override
     public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject arg0, IRubyObject arg1, IRubyObject arg2, Block block) {
-        long start = System.nanoTime();
+        long start = threadMXBean.getCurrentThreadCpuTime();
         int previousSerial = context.profileEnter(serialNumber);
         try {
             return delegate.call(context, self, clazz, name, arg0, arg1, arg2, block);
@@ -145,7 +148,7 @@ public class ProfilingDynamicMethod extends DelegatingDynamicMethod {
 
     @Override
     public IRubyObject call(ThreadContext context, IRubyObject self, RubyModule clazz, String name, IRubyObject[] args, Block block) {
-        long start = System.nanoTime();
+        long start = threadMXBean.getCurrentThreadCpuTime();
         int previousSerial = context.profileEnter(serialNumber);
         try {
             return delegate.call(context, self, clazz, name, args, block);
